@@ -1,0 +1,141 @@
+.login-page,
+.signin-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url('../assets/tetoscope.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.login-page form,
+.signin-page form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 360px;
+  padding: 32px;
+  opacity: 0.7;
+  background: rgba(20, 20, 20, 0.72);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.login-page h1,
+.signin-page h1 {
+  margin-bottom: 4px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.login-page .subtitle,
+.signin-page .subtitle {
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #c7c7c7;
+}
+
+.login-page .input-wrapper,
+.signin-page .input-wrapper {
+  position: relative;
+}
+
+label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #dfe6ea;
+}
+
+.login-page input,
+.signin-page input {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  font-size: 14px;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.login-page input::placeholder,
+.signin-page input::placeholder {
+  color: #a8a8a8;
+}
+
+.login-page input:focus,
+.signin-page input:focus {
+  outline: none;
+  border-color: #2dd4d4;
+  box-shadow: 0 0 0 2px rgba(45, 212, 212, 0.18);
+}
+
+.login-page button,
+.signin-page button {
+  margin-top: 8px;
+  padding: 14px;
+  background-color: #2dd4d4;
+  color: #0b1020;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.login-page button:hover,
+.signin-page button:hover {
+  background-color: #26c3c3;
+}
+
+.login-page button:disabled,
+.signin-page button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.login-page .error,
+.signin-page .error {
+  color: #f87171;
+  font-size: 13px;
+  margin: 0;
+}
+
+.login-page .switch-auth,
+.signin-page .switch-auth {
+  font-size: 13px;
+  text-align: center;
+  color: #d5d5d5;
+  margin: 0;
+}
+
+.login-page .switch-auth a,
+.signin-page .switch-auth a {
+  color: #2dd4d4;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.signin-page label {
+  font-size: 13px;
+  color: #dfe6ea;
+  font-weight: 500;
+}
+
+.signin-page .glass-element {
+  background: rgba(20, 20, 20, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+

@@ -1,0 +1,186 @@
+.signin-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url('../assets/tetoscope.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.signin-page form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 360px;
+  padding: 32px;
+  opacity: 0.7;
+  background: rgba(20, 20, 20, 0.72);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.signin-page h1 {
+  margin-bottom: 4px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  text-align: left;
+}
+
+.signin-page label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #dfe6ea;
+}
+
+.signin-page input {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  font-size: 14px;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.signin-page input:focus {
+  outline: none;
+  border-color: #2dd4d4;
+  box-shadow: 0 0 0 2px rgba(45, 212, 212, 0.18);
+}
+
+.signin-page select {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  font-size: 14px;
+  color: #fff;
+  box-sizing: border-box;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 20px;
+  padding-right: 40px;
+}
+
+.signin-page select:focus {
+  outline: none;
+  border-color: #2dd4d4;
+  box-shadow: 0 0 0 2px rgba(45, 212, 212, 0.18);
+}
+
+.signin-page select option {
+  background: rgba(20, 20, 20, 0.9);
+  color: #fff;
+}
+
+.signin-page .phone-input-container {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: 0.2s ease;
+}
+
+.signin-page .phone-input-container:focus-within {
+  border-color: #2dd4d4;
+  box-shadow: 0 0 0 2px rgba(45, 212, 212, 0.18);
+}
+
+.signin-page .phone-input-container input {
+  background: none;
+  border: none;
+  padding: 12px 14px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+}
+
+.signin-page .phone-input-container input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.signin-page .country-code-input {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.signin-page .country-code-divider {
+  width: 1px;
+  height: 20px;
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+.signin-page .phone-number-input {
+  flex: 1;
+}
+
+.signin-page button {
+  margin-top: 8px;
+  padding: 14px;
+  background-color: #2dd4d4;
+  color: #0b1020;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.signin-page button:hover {
+  background-color: #26c3c3;
+}
+
+.signin-page button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.signin-page .error {
+  color: #f87171;
+  font-size: 13px;
+  margin: 0;
+}
+
+.signin-page .switch-auth,
+.switch-auth {
+  font-size: 13px;
+  text-align: center;
+  color: #d5d5d5;
+  margin: 0;
+}
+
+.signin-page .switch-auth a,
+.switch-auth a {
+  color: #2dd4d4;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.signin-page .switch-auth a:hover,
+.switch-auth a:hover {
+  text-decoration: underline;
+}
+
+.glass-element {
+  background: rgba(20, 20, 20, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}

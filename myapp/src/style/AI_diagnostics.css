@@ -1,0 +1,94 @@
+ .diagnostics-page {
+	max-width: 1180px;
+	margin: 0 auto;
+	padding: 12px 8px 40px;
+	color: #172033;
+}
+
+.diagnostics-header, 
+.diagnostic-detail-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    gap: 24px; 
+    margin-bottom: 30px; }
+
+.eyebrow { 
+    margin: 0 0 8px; 
+    color: #5c6c86; 
+    font-size: 0.7rem; 
+    font-weight: 800; 
+    letter-spacing: .13em; 
+    text-transform: uppercase; }
+
+.diagnostics-header h1, 
+.diagnostic-detail-header h1 { 
+    margin: 0; 
+    color: #182d53; 
+    font-size: clamp(1.8rem, 3vw, 2.45rem); 
+    letter-spacing: -.03em; }
+
+.page-intro { 
+    margin: 10px 0 0; 
+    color: #69768a; 
+    font-size: .95rem; }
+
+.ai-summary { display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    padding: 14px 17px; 
+    border: 1px solid #dbe4f1; 
+    border-radius: 14px; 
+    background: linear-gradient(135deg, #f5f8ff, #eefaf9); 
+    color: #536da5; }
+
+.ai-summary strong, 
+.ai-summary span { 
+    display: block; }
+    
+.ai-summary strong { 
+    color: #24385e; 
+    font-size: .92rem; }
+    
+.ai-summary span { 
+    margin-top: 3px; 
+    color: #708097; 
+    font-size: .74rem; }
+
+.diagnostics-toolbar { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    gap: 16px; 
+    margin-bottom: 13px; }
+    
+.search-field { 
+    display: flex; 
+    align-items: center; 
+    gap: 9px; 
+    width: min(390px, 100%); 
+    padding: 11px 13px; 
+    border: 1px solid #dbe3ee; 
+    border-radius: 10px; 
+    background: #fff; 
+    color: #8190a5; }
+.search-field input { 
+    width: 100%; 
+    border: 0; 
+    outline: 0; 
+    color: #1d293d; 
+    font: inherit; 
+    background: transparent; }
+.result-count { 
+    color: #7a8798; 
+    font-size: .8rem; }
+
+.diagnostic-list { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; }
+    
+.diagnostic-row { display: grid; grid-template-columns: 46px minmax(145px, 1fr) minmax(250px, 1.5fr) 84px 100px 20px; align-items: center; gap: 16px; width: 100%; padding: 17px 18px; border: 1px solid #e1e7f0; border-radius: 14px; background: #fff; color: inherit; text-align: left; cursor: pointer; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }.diagnostic-row:hover { border-color: #9db5dc; box-shadow: 0 8px 22px rgba(38, 67, 109, .08); transform: translateY(-1px); }.diagnostic-avatar { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: #eaf2ff; color: #3966a7; font-size: .82rem; font-weight: 800; }.diagnostic-patient strong, .diagnostic-summary strong { display: block; color: #26344c; font-size: .91rem; }.diagnostic-patient small, .diagnostic-summary small, .diagnostic-confidence small { display: block; margin-top: 5px; color: #8290a2; font-size: .75rem; }.diagnostic-patient small span { margin: 0 3px; }.diagnostic-summary small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }.diagnostic-confidence strong { color: #4d8b79; font-size: .94rem; }.diagnostic-status { justify-self: start; padding: 6px 9px; border-radius: 999px; font-size: .69rem; font-weight: 800; white-space: nowrap; }.diagnostic-status.pending { background: #fff5d8; color: #9b7113; }.diagnostic-status.confirmed { background: #e6f7ef; color: #247b5b; }.diagnostic-status.rejected { background: #fff0f0; color: #b14c50; }.row-chevron { color: #9aa7b9; }.diagnostics-empty { padding: 34px; border: 1px dashed #cbd5e1; border-radius: 14px; color: #748196; text-align: center; }
+.back-link { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 23px; padding: 0; border: 0; background: transparent; color: #56719e; font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer; }.patient-subtitle { display: flex; align-items: center; gap: 7px; margin: 9px 0 0; color: #77849a; font-size: .84rem; }.diagnostic-detail-header { align-items: flex-end; }.diagnostic-detail-header > .diagnostic-status { margin-bottom: 5px; }.diagnostic-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }.diagnostic-card { padding: 22px; border: 1px solid #e0e7f0; border-radius: 15px; background: #fff; }.prescription-card { grid-column: 1 / -1; }.card-heading { display: flex; align-items: center; gap: 11px; margin-bottom: 21px; }.card-heading h2 { margin: 0; color: #263650; font-size: 1.02rem; }.card-heading .eyebrow { margin-bottom: 4px; font-size: .63rem; }.card-icon { display: grid; place-items: center; width: 37px; height: 37px; border-radius: 10px; }.card-icon.blue { background: #eaf2ff; color: #4475ba; }.card-icon.violet { background: #f0edff; color: #7562bd; }.card-icon.green { background: #e7f7f0; color: #348d6b; }.symptom-list { display: flex; flex-wrap: wrap; gap: 9px; }.symptom-list span { padding: 8px 11px; border: 1px solid #dce5f0; border-radius: 8px; background: #f8fafd; color: #53647d; font-size: .8rem; }.duration { display: flex; align-items: center; gap: 7px; margin-top: 25px; color: #758298; font-size: .8rem; }.duration strong { color: #374965; }.assessment-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; }.assessment-title h3 { margin: 0; color: #293c5b; font-size: 1.2rem; }.assessment-title strong { color: #6354a7; font-size: 1.25rem; }.confidence-track { height: 7px; margin-top: 14px; overflow: hidden; border-radius: 99px; background: #ebeef7; }.confidence-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #8173d0, #5ba899); }.confidence-label { margin: 7px 0 19px; color: #8994a7; font-size: .7rem; }.explanation { margin: 0; color: #65748a; font-size: .87rem; line-height: 1.7; }.prescription-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }.prescription-list li { display: flex; align-items: flex-start; gap: 8px; padding: 13px; border-radius: 9px; background: #f6faf9; color: #49675f; font-size: .82rem; line-height: 1.45; }.prescription-list svg { flex: 0 0 auto; margin-top: 1px; color: #46a381; }.warning-box { display: flex; gap: 10px; margin-top: 17px; padding: 13px; border: 1px solid #f4dfac; border-radius: 9px; background: #fffaf0; color: #9a741c; font-size: .8rem; }.warning-box p { margin: 4px 0 0; line-height: 1.45; }.review-bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 16px; padding: 18px 20px; border: 1px solid #d9e3ef; border-radius: 14px; background: #f7f9fc; }.review-bar strong { color: #2c3b54; font-size: .9rem; }.review-bar p { margin: 4px 0 0; color: #7d899a; font-size: .77rem; }.review-actions { display: flex; gap: 9px; }.review-actions button { display: inline-flex; align-items: center; gap: 7px; padding: 10px 14px; border-radius: 9px; font: inherit; font-size: .78rem; font-weight: 800; cursor: pointer; }.reject-button { border: 1px solid #efcaca; background: #fff; color: #b14c50; }.confirm-button { border: 1px solid #39876e; background: #39876e; color: #fff; }
+@media (max-width: 850px) { .diagnostic-row { grid-template-columns: 46px minmax(0, 1fr) 100px 20px; }.diagnostic-summary { display: none; }.diagnostic-row > .diagnostic-status { grid-column: 3; grid-row: 1; }.diagnostic-confidence { grid-column: 3; grid-row: 1; margin-top: 34px; }.row-chevron { grid-column: 4; grid-row: 1; }.prescription-list { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .diagnostics-page { padding-inline: 0; }.diagnostics-header, .diagnostic-detail-header, .review-bar { flex-direction: column; align-items: flex-start; }.ai-summary { width: 100%; box-sizing: border-box; }.diagnostic-detail-grid { grid-template-columns: 1fr; }.prescription-card { grid-column: auto; }.review-actions { width: 100%; flex-direction: column; }.review-actions button { justify-content: center; width: 100%; }.diagnostic-row { grid-template-columns: 42px minmax(0, 1fr) 20px; padding: 14px 12px; gap: 11px; }.diagnostic-avatar { width: 40px; height: 40px; }.diagnostic-row > .diagnostic-status, .diagnostic-confidence { display: none; }.row-chevron { grid-column: 3; }.diagnostics-toolbar { align-items: flex-start; flex-direction: column; }.search-field { width: 100%; box-sizing: border-box; } }
