@@ -61,19 +61,24 @@ register_error_handlers(app)
 app.add_middleware(RequestLoggingMiddleware)
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
-# allow_origins=["*"] with allow_credentials=True is not allowed by browsers.
-# List explicit origins instead. Add your Expo / web dev URLs as needed.
+# ALLOWED_ORIGINS env var lets you add production URLs without changing code.
+# Format: comma-separated list, e.g. "https://myapp.vercel.app,https://mydomain.com"
+_extra_origins = [
+    o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",   # Vite dev server
+        "http://localhost:5173",
         "http://localhost:3000",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
-        "http://localhost:8081",   # Expo Go
+        "http://localhost:8081",
         "http://127.0.0.1:8081",
         "exp://localhost:8081",
         "exp://127.0.0.1:8081",
+        *_extra_origins,
     ],
     allow_credentials=True,
     allow_methods=["*"],
