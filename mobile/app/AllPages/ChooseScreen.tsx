@@ -14,7 +14,7 @@ type Language = 'francais' | 'ghomala';
 
 export default function Choose() {
   const [selectedLanguage, setSelectedLanguage] =
-    useState<Language>('francais');
+    useState<Language>('ghomala');
 
   const handleContinue = () => {
     router.replace({
@@ -87,9 +87,9 @@ export default function Choose() {
           </Text>
 
           <Text style={styles.description}>
-            Choisissez la langue que vous souhaitez
-            utiliser pour communiquer avec votre
-            assistant médical intelligent.
+            Choisissez votre langue. Le système traduira
+            automatiquement vers le français pour que
+            votre médecin puisse comprendre.
           </Text>
 
           {/* ================= LANGUES ================= */}
@@ -135,7 +135,7 @@ export default function Choose() {
                 </Text>
 
                 <Text style={styles.languageDescription}>
-                  Communiquer avec Djohealth en français
+                  Je parle français — traduire vers le Ghomala
                 </Text>
 
               </View>
@@ -193,7 +193,7 @@ export default function Choose() {
                 </Text>
 
                 <Text style={styles.languageDescription}>
-                  Communiquer avec Djohealth en Ghomala
+                  Je parle Ghomala — traduire vers le français
                 </Text>
 
               </View>

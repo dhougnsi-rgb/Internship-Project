@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.staff import Staff
 from app.models.user import User
 from app.outils.deps import require_roles
+from app.outils.exceptions import NotFoundError
 from app.schemas.staff import StaffCreate, StaffOut, StaffUpdate
 
 router = APIRouter(prefix="/staff", tags=["staff"])
@@ -47,7 +48,7 @@ def update_staff(
 ):
     member = db.query(Staff).filter(Staff.id == staff_id).first()
     if not member:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Membre introuvable.")
+        raise NotFoundError(detail="Membre introuvable.")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(member, key, value)
     db.commit()
@@ -63,6 +64,6 @@ def delete_staff(
 ):
     member = db.query(Staff).filter(Staff.id == staff_id).first()
     if not member:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Membre introuvable.")
+        raise NotFoundError(detail="Membre introuvable.")
     db.delete(member)
     db.commit()

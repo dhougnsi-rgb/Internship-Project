@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -6,6 +6,7 @@ from app.models.patient import Patient
 from app.models.user import User
 from app.outils.auth import create_access_token, hash_password, verify_password
 from app.outils.deps import get_current_user
+from app.outils.exceptions import AuthenticationError, ConflictError, ValidationError
 from app.schemas.user import (
     ALLOWED_ROLES,
     PATIENT_ROLE,
@@ -53,17 +54,11 @@ def _token_response(user: User) -> TokenResponse:
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     role = (user_data.role or "staff").strip().lower()
     if role not in ALLOWED_ROLES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Rôle invalide.",
-        )
+        raise ValidationError(detail="Rôle invalide.")
 
     existing_user = db.query(User).filter(User.email == user_data.email).first()
     if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Un compte avec cet email existe déjà.",
-        )
+        raise ConflictError(detail="Un compte avec cet email existe déjà.")
 
     new_user = User(
         name=user_data.name.strip(),
@@ -87,10 +82,7 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == str(credentials.email).lower()).first()
 
     if not user or not verify_password(credentials.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email ou mot de passe incorrect.",
-        )
+        raise AuthenticationError(detail="Email ou mot de passe incorrect.")
 
     if user.role == PATIENT_ROLE:
         _ensure_patient_record(db, user)
@@ -127,7 +119,7 @@ def update_profile(data: ProfileUpdate, db: Session = Depends(get_db), user: Use
 @router.patch("/me/password")
 def change_password(data: PasswordUpdate, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     if not verify_password(data.current_password, user.hashed_password):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Mot de passe actuel incorrect.")
+        raise AuthenticationError(detail="Mot de passe actuel incorrect.")
     user.hashed_password = hash_password(data.new_password)
     db.commit()
     return {"detail": "Mot de passe mis à jour."}

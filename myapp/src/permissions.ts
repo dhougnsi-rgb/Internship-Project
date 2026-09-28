@@ -84,6 +84,13 @@ export const PAGE_PERMISSIONS: PagePermission[] = [
     allowedRoles: ['administrator', 'doctor'],
   },
   {
+    // Translations — doctors + admin can read patient Ghomala↔French translations
+    path: '/translations',
+    label: 'Traductions',
+    adminOnly: false,
+    allowedRoles: ['administrator', 'doctor'],
+  },
+  {
     // Staff management — administrator only
     path: '/staff',
     label: 'Personnel médical',

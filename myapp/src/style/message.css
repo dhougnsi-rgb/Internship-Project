@@ -437,3 +437,21 @@
     align-items: stretch;
   }
 }
+
+/* ── WebSocket status indicator ──────────────────────────────────── */
+.ws-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 6px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.ws-indicator.connected  { background: #dcfce7; color: #16a34a; }
+.ws-indicator.disconnected { background: #fee2e2; color: #dc2626; }
+
+.sidebar-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

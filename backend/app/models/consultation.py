@@ -7,6 +7,8 @@ class Consultation(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     patient_id = Column(Integer, ForeignKey("patients.id"), nullable=True, index=True)
+    # Link back to the appointment that generated this consultation (nullable for manual ones)
+    appointment_id = Column(Integer, ForeignKey("appointments.id"), nullable=True, unique=True, index=True)
     patient_nom = Column(String, nullable=False)
     age = Column(Integer, nullable=True)
     sexe = Column(String, nullable=True)          # 'M' | 'F'

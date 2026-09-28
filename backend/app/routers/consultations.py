@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.consultation import Consultation
 from app.models.user import User
 from app.outils.deps import require_roles
+from app.outils.exceptions import NotFoundError
 from app.schemas.consultation import ConsultationCreate, ConsultationOut, ConsultationUpdate
 
 router = APIRouter(prefix="/consultations", tags=["consultations"])
@@ -54,7 +55,7 @@ def update_consultation(
 ):
     consultation = db.query(Consultation).filter(Consultation.id == consultation_id).first()
     if not consultation:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Consultation introuvable.")
+        raise NotFoundError(detail="Consultation introuvable.")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(consultation, key, value)
     db.commit()
@@ -70,6 +71,6 @@ def delete_consultation(
 ):
     consultation = db.query(Consultation).filter(Consultation.id == consultation_id).first()
     if not consultation:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Consultation introuvable.")
+        raise NotFoundError(detail="Consultation introuvable.")
     db.delete(consultation)
     db.commit()

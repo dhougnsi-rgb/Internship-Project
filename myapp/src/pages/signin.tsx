@@ -14,7 +14,7 @@ export default function SignIn() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [confirmationPassword, setConfirmationPassword] = useState('')
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [role] = useState('administrator')
+  const [role, setRole] = useState<'administrator' | 'doctor' | 'staff'>('staff')
   const { register, isLoading } = useAuth()
   const navigate = useNavigate()
 
@@ -172,6 +172,18 @@ export default function SignIn() {
             {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
+        <label htmlFor="role">Rôle</label>
+        <select
+          id="role"
+          value={role}
+          onChange={(e) => setRole(e.target.value as 'administrator' | 'doctor' | 'staff')}
+          style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '0.95rem', background: '#f9fafb', color: '#111827' }}
+        >
+          <option value="staff">Staff</option>
+          <option value="doctor">Médecin</option>
+          <option value="administrator">Administrateur</option>
+        </select>
+
         <p className="switch-auth">
           Avez-vous déjà un compte ? <Link to="/login">Connectez-vous</Link>
         </p>

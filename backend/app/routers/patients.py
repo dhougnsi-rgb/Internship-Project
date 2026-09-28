@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.patient import Patient
 from app.models.user import User
 from app.outils.deps import require_roles
+from app.outils.exceptions import NotFoundError, ValidationError
 from app.schemas.patient import PatientCreate, PatientOut, PatientUpdate
 
 router = APIRouter(prefix="/patients", tags=["patients"])
@@ -57,11 +58,11 @@ def update_patient(
 ):
     patient = db.query(Patient).filter(Patient.id == patient_id).first()
     if not patient:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient introuvable.")
+        raise NotFoundError(detail="Patient introuvable.")
 
     updates = data.model_dump(exclude_unset=True)
     if "category" in updates and updates["category"] not in CATEGORIES:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Catégorie invalide.")
+        raise ValidationError(detail="Catégorie invalide.")
     if "name" in updates and updates["name"]:
         updates["name"] = updates["name"].strip()
 
@@ -81,6 +82,6 @@ def delete_patient(
 ):
     patient = db.query(Patient).filter(Patient.id == patient_id).first()
     if not patient:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient introuvable.")
+        raise NotFoundError(detail="Patient introuvable.")
     db.delete(patient)
     db.commit()

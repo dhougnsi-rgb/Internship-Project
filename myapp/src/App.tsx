@@ -10,13 +10,16 @@ import Staff from './pages/Staff'
 import RendezVous from './pages/rendez-vous'
 import Consultations from './pages/Consultations'
 import AI_Diagnostics from './pages/AI_diagnostics'
+import Translations from './pages/Translations'
 import Settings from './pages/Settings'
 import ProtectedRoute from './components/protectedroute'
 import AppLayout from './components/applayout'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import './dashboard.css'
 
 function App() {
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <AppointmentProvider>
         <BrowserRouter>
@@ -35,6 +38,7 @@ function App() {
                 <Route path="/consultations" element={<Consultations />} />
                 <Route path="/ai-diagnostics" element={<AI_Diagnostics />} />
                 <Route path="/ai-diagnostics/:patientId" element={<AI_Diagnostics />} />
+                <Route path="/translations" element={<Translations />} />
                 <Route path="/settings" element={<Settings />} />
               </Route>
             </Route>
@@ -42,6 +46,7 @@ function App() {
         </BrowserRouter>
       </AppointmentProvider>
     </AuthProvider>
+    </ErrorBoundary>
   )
 }
 

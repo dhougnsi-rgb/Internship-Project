@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState, useRef } from 'react'
-import { Send, UserRound, Plus } from 'lucide-react'
-import { apiCall, getApiErrorMessage } from '../api'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Send, UserRound, Plus, Wifi, WifiOff } from 'lucide-react'
+import { apiCall, getApiErrorMessage, API_URL } from '../api'
 import '../style/message.css'
 import { useAppointments } from '../context/AppointmentContext'
 
@@ -30,6 +30,18 @@ type PatientContact = {
   category: PatientCategory
 }
 
+// ── WebSocket URL helper ──────────────────────────────────────────────────────
+function wsUrl(): string {
+  const base = API_URL.replace(/^http/, 'ws')
+  const token = localStorage.getItem('token') ?? ''
+  return `${base}/ws?token=${encodeURIComponent(token)}`
+}
+
+function formatTime(iso?: string): string {
+  if (!iso) return ''
+  return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+}
+
 export default function Messages() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [patients, setPatients] = useState<PatientContact[]>([])
@@ -38,20 +50,129 @@ export default function Messages() {
   const [newDiscussionSearch, setNewDiscussionSearch] = useState('')
   const [conversationsSearch, setConversationsSearch] = useState('')
   const [messageInput, setMessageInput] = useState('')
+  const [wsConnected, setWsConnected] = useState(false)
   const chatBodyRef = useRef<HTMLDivElement>(null)
+  const wsRef = useRef<WebSocket | null>(null)
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { pendingNotification, clearNotification } = useAppointments()
 
-  // Fetch patients for the "new discussion" picker
+  // ── Load history from backend ────────────────────────────────────────────
   useEffect(() => {
+    apiCall('/messages')
+      .then((data: any[]) => {
+        const myId = (() => {
+          try { return JSON.parse(localStorage.getItem('user') ?? '{}').id as number } catch { return -1 }
+        })()
+
+        // Group messages by conversation partner
+        const convMap = new Map<number, Conversation>()
+        for (const m of data) {
+          const isMe = m.sender_id === myId
+          const partnerId: number = isMe ? m.recipient_id : m.sender_id
+          const partnerName: string = isMe ? (m.recipient_name ?? 'Inconnu') : (m.sender_name ?? 'Inconnu')
+          if (!convMap.has(partnerId)) {
+            convMap.set(partnerId, {
+              id: partnerId,
+              nom: partnerName,
+              status: 'En ligne',
+              preview: '',
+              unread: 0,
+              recipientId: partnerId,
+              messages: [],
+            })
+          }
+          const conv = convMap.get(partnerId)!
+          conv.messages.push({
+            id: m.id,
+            sender: isMe ? 'me' : 'them',
+            text: m.text,
+            time: formatTime(m.created_at),
+          })
+          conv.preview = m.text
+        }
+        setConversations([...convMap.values()])
+      })
+      .catch(() => {/* silently ignore */})
+
+    // Fetch patients for new-discussion picker
     apiCall('/patients')
       .then((data: { id: number; name: string; category: PatientCategory }[]) => {
         setPatients(data.map((p) => ({ id: p.id, nom: p.name, category: p.category })))
       })
-      .catch(() => {/* silently ignore — staff role may not have access */})
+      .catch(() => {})
   }, [])
 
-  // Inject reschedule notifications into conversations
+  // ── WebSocket connection ─────────────────────────────────────────────────
+  useEffect(() => {
+    let active = true
+
+    function connect() {
+      if (!active) return
+      const ws = new WebSocket(wsUrl())
+      wsRef.current = ws
+
+      ws.onopen = () => { if (active) setWsConnected(true) }
+
+      ws.onmessage = (evt) => {
+        try {
+          const frame = JSON.parse(evt.data)
+          if (frame.type !== 'message') return
+          const myId = (() => {
+            try { return JSON.parse(localStorage.getItem('user') ?? '{}').id as number } catch { return -1 }
+          })()
+          const isMe = frame.sender_id === myId
+          const partnerId: number = isMe ? frame.recipient_id : frame.sender_id
+          const partnerName: string = isMe ? (frame.recipient_name ?? 'Inconnu') : (frame.sender_name ?? 'Inconnu')
+          const newMsg: ChatMessage = {
+            id: frame.id,
+            sender: isMe ? 'me' : 'them',
+            text: frame.text,
+            time: formatTime(frame.created_at),
+          }
+          setConversations((prev) => {
+            const existing = prev.find((c) => c.recipientId === partnerId)
+            if (existing) {
+              return prev.map((c) =>
+                c.recipientId === partnerId
+                  ? { ...c, preview: frame.text, messages: [...c.messages, newMsg], unread: c.unread + (isMe ? 0 : 1) }
+                  : c
+              )
+            }
+            return [{
+              id: partnerId,
+              nom: partnerName,
+              status: 'En ligne',
+              preview: frame.text,
+              unread: isMe ? 0 : 1,
+              recipientId: partnerId,
+              messages: [newMsg],
+            }, ...prev]
+          })
+        } catch { /* ignore bad frames */ }
+      }
+
+      ws.onerror = () => { /* handled by onclose */ }
+
+      ws.onclose = () => {
+        if (active) {
+          setWsConnected(false)
+          // Exponential back-off reconnect
+          reconnectTimer.current = setTimeout(connect, 3000)
+        }
+      }
+    }
+
+    connect()
+
+    return () => {
+      active = false
+      if (reconnectTimer.current) clearTimeout(reconnectTimer.current)
+      wsRef.current?.close()
+    }
+  }, [])
+
+  // ── Reschedule notification injection ────────────────────────────────────
   useEffect(() => {
     if (!pendingNotification) return
     const { patientName, patientCategory, newDate, newTime } = pendingNotification
@@ -80,11 +201,9 @@ export default function Messages() {
     clearNotification()
   }, [pendingNotification, clearNotification])
 
-  // Scroll to bottom when messages change
+  // ── Scroll to bottom ─────────────────────────────────────────────────────
   useEffect(() => {
-    if (chatBodyRef.current) {
-      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight
-    }
+    if (chatBodyRef.current) chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight
   }, [selectedConversationId, conversations])
 
   const selectedConversation = conversations.find((c) => c.id === selectedConversationId) ?? conversations[0] ?? null
@@ -100,24 +219,19 @@ export default function Messages() {
   }, [newDiscussionSearch, patients])
 
   const handleCreateConversation = (patient: PatientContact) => {
-    const existing = conversations.find((c) => c.nom === patient.nom)
+    const existing = conversations.find((c) => c.recipientId === patient.id)
     if (existing) {
       setSelectedConversationId(existing.id)
     } else {
       const newConv: Conversation = {
-        id: Date.now(),
+        id: patient.id,
         nom: patient.nom,
         category: patient.category,
         status: 'En ligne',
         preview: 'Nouvelle discussion démarrée.',
         unread: 0,
         recipientId: patient.id,
-        messages: [{
-          id: 1,
-          sender: 'me',
-          text: `Bonjour ${patient.nom}, comment puis-je vous aider aujourd'hui ?`,
-          time: 'Maintenant',
-        }],
+        messages: [],
       }
       setConversations((prev) => [newConv, ...prev])
       setSelectedConversationId(newConv.id)
@@ -126,32 +240,30 @@ export default function Messages() {
     setNewDiscussionSearch('')
   }
 
-  const handleSend = async () => {
+  const handleSend = () => {
     const text = messageInput.trim()
     if (!text || !selectedConversation) return
-
-    const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-    const tempMessage: ChatMessage = { id: Date.now(), sender: 'me', text, time: now }
-
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === selectedConversation.id
-          ? { ...c, preview: text, messages: [...c.messages, tempMessage] }
-          : c
-      )
-    )
     setMessageInput('')
 
-    // Persist to backend if we have a recipient
-    if (selectedConversation.recipientId) {
-      try {
-        await apiCall('/messages', {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      // Send via WebSocket — the server will echo it back and persist it
+      wsRef.current.send(JSON.stringify({
+        type: 'message',
+        recipient_id: selectedConversation.recipientId,
+        text,
+      }))
+    } else {
+      // Fallback: REST POST
+      const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+      const tempMsg: ChatMessage = { id: Date.now(), sender: 'me', text, time: now }
+      setConversations((prev) =>
+        prev.map((c) => c.id === selectedConversation.id ? { ...c, preview: text, messages: [...c.messages, tempMsg] } : c)
+      )
+      if (selectedConversation.recipientId) {
+        apiCall('/messages', {
           method: 'POST',
           body: JSON.stringify({ recipient_id: selectedConversation.recipientId, text }),
-        })
-      } catch (error) {
-        console.error('Failed to send message:', getApiErrorMessage(error))
-        // Message shown locally even if network fails
+        }).catch((err) => console.error('Failed to send message:', getApiErrorMessage(err)))
       }
     }
   }
@@ -202,6 +314,12 @@ export default function Messages() {
           <div className="sidebar-header">
             <h2>Conversations</h2>
             <div className="sidebar-header-actions">
+              <span
+                className={`ws-indicator ${wsConnected ? 'connected' : 'disconnected'}`}
+                title={wsConnected ? 'Connecté en temps réel' : 'Reconnexion...'}
+              >
+                {wsConnected ? <Wifi size={14} /> : <WifiOff size={14} />}
+              </span>
               <button type="button" className="new-message-btn" onClick={() => setIsNewDiscussionOpen(true)}>
                 <Plus size={17} aria-hidden="true" />
               </button>
@@ -220,7 +338,10 @@ export default function Messages() {
                 type="button"
                 key={conv.id}
                 className={`conversation-item ${selectedConversation?.id === conv.id ? 'active' : ''}`}
-                onClick={() => { setSelectedConversationId(conv.id); setConversations((prev) => prev.map((c) => c.id === conv.id ? { ...c, unread: 0 } : c)) }}
+                onClick={() => {
+                  setSelectedConversationId(conv.id)
+                  setConversations((prev) => prev.map((c) => c.id === conv.id ? { ...c, unread: 0 } : c))
+                }}
               >
                 <div className="conversation-avatar"><UserRound size={20} /></div>
                 <div className="conversation-copy">

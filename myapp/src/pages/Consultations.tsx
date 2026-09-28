@@ -1,5 +1,15 @@
+/**
+ * Consultations.tsx
+ *
+ * Consultations are created automatically when a doctor confirms an AI
+ * pre-diagnostic on the "Prediagnostics IA" page. This page is read-only
+ * and shows the resulting consultation records.
+ *
+ * Doctors can still add clinical notes / update the diagnostic on a record
+ * by clicking into the detail view.
+ */
 import { useEffect, useState } from 'react'
-import { UserRound, Plus, X, Loader2 } from 'lucide-react'
+import { UserRound, Loader2, Brain } from 'lucide-react'
 import { apiCall, getApiErrorMessage } from '../api'
 import '../style/consultation.css'
 
@@ -8,6 +18,7 @@ type FilterType = 'Tous' | ConsultationStatus | 'Urgences'
 
 type Consultation = {
   id: number
+  appointment_id: number | null
   patient_nom: string
   age: number | null
   sexe: 'M' | 'F' | null
@@ -31,8 +42,6 @@ export default function Consultations() {
   const [selected, setSelected] = useState<Consultation | null>(null)
   const [notes, setNotes] = useState('')
   const [diagnostic, setDiagnostic] = useState('')
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [newC, setNewC] = useState({ patientNom: '', age: '', service: '', motif: '', urgent: false })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -41,8 +50,8 @@ export default function Consultations() {
       setLoading(true)
       setConsultations(await apiCall('/consultations'))
       setError('')
-    } catch (error) {
-      setError(getApiErrorMessage(error))
+    } catch (err) {
+      setError(getApiErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -53,7 +62,8 @@ export default function Consultations() {
   const filtered = consultations.filter((c) => {
     const matchSearch =
       c.patient_nom.toLowerCase().includes(search.toLowerCase()) ||
-      (c.service ?? '').toLowerCase().includes(search.toLowerCase())
+      (c.service ?? '').toLowerCase().includes(search.toLowerCase()) ||
+      (c.medecin ?? '').toLowerCase().includes(search.toLowerCase())
     const matchFilter =
       filter === 'Tous' ? true :
       filter === 'Urgences' ? c.urgent :
@@ -61,53 +71,24 @@ export default function Consultations() {
     return matchSearch && matchFilter
   })
 
-  const handleAddConsultation = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      await apiCall('/consultations', {
-        method: 'POST',
-        body: JSON.stringify({
-          patient_nom: newC.patientNom,
-          age: parseInt(newC.age) || null,
-          service: newC.service || null,
-          motif: newC.motif || null,
-          urgent: newC.urgent,
-          heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-        }),
-      })
-      await fetchConsultations()
-      setIsFormOpen(false)
-      setNewC({ patientNom: '', age: '', service: '', motif: '', urgent: false })
-    } catch (error) {
-      setError(getApiErrorMessage(error))
-    }
-  }
-
   const handleSaveNotes = async () => {
     if (!selected) return
     setSaving(true)
     try {
       await apiCall(`/consultations/${selected.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ notes, diagnostic, status: 'Terminé' }),
+        body: JSON.stringify({ notes, diagnostic }),
       })
       await fetchConsultations()
       setSelected(null)
-    } catch (error) {
-      setError(getApiErrorMessage(error))
+    } catch (err) {
+      setError(getApiErrorMessage(err))
     } finally {
       setSaving(false)
     }
   }
 
-  if (loading) {
-    return (
-      <div className="consultation-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-        <Loader2 className="animate-spin" size={32} />
-      </div>
-    )
-  }
-
+  // ── Detail view ────────────────────────────────────────────────────────────
   if (selected) {
     return (
       <div className="consultation-page">
@@ -123,7 +104,12 @@ export default function Consultations() {
               </p>
               <div className="detail-badges">
                 {selected.urgent && <span className="badge badge-urgent">URGENT</span>}
-                <span className={`badge badge-status badge-${selected.status.replace(' ', '-').toLowerCase()}`}>{selected.status}</span>
+                <span className={`badge badge-status badge-${selected.status.replace(/ /g, '-').toLowerCase()}`}>{selected.status}</span>
+                {selected.appointment_id && (
+                  <span className="badge badge-ai">
+                    <Brain size={12} /> Généré par IA
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -146,7 +132,7 @@ export default function Consultations() {
               <h3 className="card-title">Motif & Observations</h3>
               {selected.motif && (
                 <div className="symptom-tags">
-                  {selected.motif.split(' ').slice(0, 4).map((tag) => (
+                  {selected.motif.split(/[,—]+/).map((tag) => tag.trim()).filter(Boolean).map((tag) => (
                     <span key={tag} className="symptom-tag">{tag}</span>
                   ))}
                 </div>
@@ -175,20 +161,29 @@ export default function Consultations() {
         </div>
 
         <div className="detail-footer">
-          <button type="button" className="action-button primary-btn save-btn" onClick={handleSaveNotes} disabled={saving}>
-            {saving ? 'Enregistrement...' : 'Terminer et sauvegarder'}
+          <button
+            type="button"
+            className="action-button primary-btn save-btn"
+            onClick={handleSaveNotes}
+            disabled={saving}
+          >
+            {saving ? 'Enregistrement...' : 'Sauvegarder les notes'}
           </button>
         </div>
       </div>
     )
   }
 
+  // ── List view ──────────────────────────────────────────────────────────────
   return (
     <div className="consultation-page">
       <div className="consultation-header">
         <div>
           <p className="section-label">Consultations</p>
-          <h1>Consultations du jour</h1>
+          <h1>Consultations validées</h1>
+          <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: 4 }}>
+            Les consultations sont créées automatiquement depuis les pré-diagnostics IA validés.
+          </p>
         </div>
       </div>
 
@@ -196,70 +191,53 @@ export default function Consultations() {
         <input
           type="text"
           className="consultation-search"
-          placeholder="Rechercher un patient ou un service..."
+          placeholder="Rechercher un patient, médecin ou service..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button type="button" className="new-consultation-btn" onClick={() => setIsFormOpen(true)}>
-          <Plus size={17} /> Nouvelle Consultation
-        </button>
       </div>
 
-      {(['Tous', 'En attente', 'En cours', 'Terminé', 'Urgences'] as FilterType[]).map((tab) => (
-        <button
-          key={tab}
-          type="button"
-          style={{ marginRight: 8, marginBottom: 12, padding: '4px 12px', borderRadius: 6, border: '1px solid #cbd5e1', background: filter === tab ? '#0066ff' : 'white', color: filter === tab ? 'white' : '#334155', cursor: 'pointer' }}
-          onClick={() => setFilter(tab)}
-        >
-          {tab}
-        </button>
-      ))}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+        {(['Tous', 'En attente', 'En cours', 'Terminé', 'Urgences'] as FilterType[]).map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            style={{
+              padding: '4px 14px', borderRadius: 6, border: '1px solid #cbd5e1', cursor: 'pointer',
+              background: filter === tab ? '#0066ff' : 'white',
+              color: filter === tab ? 'white' : '#334155',
+              fontWeight: filter === tab ? 600 : 400,
+            }}
+            onClick={() => setFilter(tab)}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
 
       {error && <p style={{ color: 'red', marginBottom: 12 }}>{error}</p>}
 
-      {isFormOpen && (
-        <div className="staff-modal-backdrop" onClick={() => setIsFormOpen(false)}>
-          <form className="staff-modal" onSubmit={handleAddConsultation} onClick={(e) => e.stopPropagation()}>
-            <div className="staff-modal-header">
-              <div><p className="staff-label">Consultations</p><h2>Nouvelle consultation</h2></div>
-              <button type="button" className="modal-close-button" onClick={() => setIsFormOpen(false)} aria-label="Fermer"><X size={20} /></button>
-            </div>
-            <label>Nom du patient
-              <input required value={newC.patientNom} onChange={(e) => setNewC({ ...newC, patientNom: e.target.value })} placeholder="Ex. Amina Tchou" />
-            </label>
-            <label>Âge
-              <input type="number" value={newC.age} onChange={(e) => setNewC({ ...newC, age: e.target.value })} placeholder="Ex. 34" />
-            </label>
-            <label>Service
-              <select value={newC.service} onChange={(e) => setNewC({ ...newC, service: e.target.value })}>
-                <option value="">Sélectionner un service</option>
-                <option value="Cardiologie">Cardiologie</option>
-                <option value="Neurologie">Neurologie</option>
-                <option value="Pédiatrie">Pédiatrie</option>
-                <option value="Orthopédie">Orthopédie</option>
-                <option value="Dermatologie">Dermatologie</option>
-                <option value="Urgences">Urgences</option>
-              </select>
-            </label>
-            <label>Motif
-              <textarea value={newC.motif} onChange={(e) => setNewC({ ...newC, motif: e.target.value })} placeholder="Décrivez le motif de la consultation..." />
-            </label>
-            <label style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <input type="checkbox" checked={newC.urgent} onChange={(e) => setNewC({ ...newC, urgent: e.target.checked })} />
-              Urgent
-            </label>
-            <button type="submit" className="save-staff-button"><Plus size={17} /> Ajouter la consultation</button>
-          </form>
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
+          <Loader2 className="animate-spin" size={32} />
         </div>
-      )}
-
-      <div className="consultation-grid">
-        {filtered.length === 0 ? (
-          <p className="consultation-empty-state">Aucune consultation trouvée.</p>
-        ) : (
-          filtered.map((c) => (
-            <article key={c.id} className={`consultation-card ${c.urgent ? 'urgent' : ''}`} onClick={() => { setSelected(c); setNotes(c.notes ?? ''); setDiagnostic(c.diagnostic ?? '') }}>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '48px 0', color: '#64748b' }}>
+          <Brain size={40} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.3 }} />
+          <p style={{ fontWeight: 600 }}>Aucune consultation trouvée.</p>
+          <p style={{ fontSize: '0.85rem', marginTop: 4 }}>
+            Les consultations apparaissent ici après validation d'un pré-diagnostic sur la page&nbsp;
+            <strong>Prediagnostics IA</strong>.
+          </p>
+        </div>
+      ) : (
+        <div className="consultation-grid">
+          {filtered.map((c) => (
+            <article
+              key={c.id}
+              className={`consultation-card ${c.urgent ? 'urgent' : ''}`}
+              onClick={() => { setSelected(c); setNotes(c.notes ?? ''); setDiagnostic(c.diagnostic ?? '') }}
+            >
               <div className="card-top">
                 <div className={`card-avatar ${c.urgent ? 'urgent' : ''}`}><UserRound size={24} /></div>
                 <div>
@@ -271,13 +249,18 @@ export default function Consultations() {
               <div className="card-row"><span className="card-key">Heure</span><span>{c.heure ?? '—'}</span></div>
               <div className="card-row"><span className="card-key">Motif</span><span className="card-motif">{c.motif ?? '—'}</span></div>
               <div className="card-footer">
-                <span className={`badge badge-status badge-${c.status.replace(' ', '-').toLowerCase()}`}>{c.status}</span>
+                <span className={`badge badge-status badge-${c.status.replace(/ /g, '-').toLowerCase()}`}>{c.status}</span>
                 {c.urgent && <span className="badge badge-urgent">Urgent</span>}
+                {c.appointment_id && (
+                  <span className="badge badge-ai" title="Généré depuis un pré-diagnostic IA">
+                    <Brain size={11} /> IA
+                  </span>
+                )}
               </div>
             </article>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

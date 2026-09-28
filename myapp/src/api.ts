@@ -6,7 +6,7 @@ export async function apiCall(endpoint: string, options: RequestInit = {}) {
   const url = `${API_URL}${endpoint}`;
   
   // Get token from localStorage
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem('token');
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

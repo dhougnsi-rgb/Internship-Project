@@ -16,6 +16,10 @@ export default function RootLayout() {
       <Stack.Screen name="ChatScreen" />
       <Stack.Screen name="HistoryScreen" />
       <Stack.Screen name="ProfileScreen" />
+      <Stack.Screen name="AppointmentScreen" />
+      <Stack.Screen name="DiagnosticScreen" />
+      <Stack.Screen name="MessagesScreen" />
+      <Stack.Screen name="MyAppointmentsScreen" />
     </Stack>
   );
 }

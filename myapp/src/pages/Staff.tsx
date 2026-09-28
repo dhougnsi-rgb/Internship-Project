@@ -14,12 +14,12 @@ type StaffMember = {
 }
 
 const CATEGORY_TO_ROLE: Record<string, string> = {
-  Generaliste:  'docteur',
-  Chirugien:    'docteur',
-  Pediatre:     'docteur',
-  Ophtamologue: 'docteur',
-  Infirmier:    'personel',
-  Autre:        'personel',
+  Generaliste:  'doctor',
+  Chirugien:    'doctor',
+  Pediatre:     'doctor',
+  Ophtamologue: 'doctor',
+  Infirmier:    'staff',
+  Autre:        'staff',
 }
 
 export default function Staff() {

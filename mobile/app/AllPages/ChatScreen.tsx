@@ -1,4 +1,4 @@
-import { getApiErrorMessage, saveMessage, translate } from '@/api/api';
+import { getApiErrorMessage, saveMessage, translate, transcribeAudio } from '@/api/api';
 import { Ionicons } from '@expo/vector-icons';
 import { AudioModule, RecordingPresets, useAudioRecorder } from 'expo-audio';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -136,8 +136,34 @@ export default function ChatScreen() {
   const stopRecording = async () => {
     try {
       await recorder.stop();
-      setErrorMessage("Enregistrement terminé. La reconnaissance vocale française n'est pas encore disponible sur ce backend : saisissez le texte pour lancer la traduction.");
-    } finally {
+      setIsRecording(false);
+
+      // Get the URI of the recorded file
+      const uri = recorder.uri;
+      if (!uri) {
+        setErrorMessage('Enregistrement vide — réessayez.');
+        return;
+      }
+
+      setLoading(true);
+      setErrorMessage('');
+
+      try {
+        // Send to backend for Gemini transcription
+        const result = await transcribeAudio(uri, 'audio/m4a');
+        const transcribed = result.transcription.trim();
+        if (transcribed) {
+          setMessage(transcribed);
+        } else {
+          setErrorMessage('Aucune parole détectée. Réessayez.');
+        }
+      } catch (err) {
+        setErrorMessage(`Transcription échouée : ${getApiErrorMessage(err)}`);
+      } finally {
+        setLoading(false);
+      }
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error));
       setIsRecording(false);
     }
   };

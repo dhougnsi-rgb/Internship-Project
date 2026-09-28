@@ -33,6 +33,7 @@ class ConsultationUpdate(BaseModel):
 class ConsultationOut(BaseModel):
     id: int
     patient_id: int | None = None
+    appointment_id: int | None = None
     patient_nom: str
     age: int | None = None
     sexe: str | None = None
@@ -47,4 +48,4 @@ class ConsultationOut(BaseModel):
     diagnostic: str | None = None
 
     class Config:
-        from_attributes = True
+        from_attributes = True 

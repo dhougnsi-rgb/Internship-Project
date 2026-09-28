@@ -1,0 +1,22 @@
+{
+  "name": "@djohealth/shared-types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript type definitions for DjoHealth platform",
+  "main": "types/index.ts",
+  "types": "types/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "keywords": [
+    "typescript",
+    "types",
+    "shared",
+    "djohealth"
+  ],
+  "author": "DjoHealth Team",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

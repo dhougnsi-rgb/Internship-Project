@@ -92,6 +92,36 @@ export interface HistoryMessageData {
   audio_traduction?: string;
 }
 
+// ── Appointment interfaces ────────────────────────────────────────────────────
+
+export interface AppointmentCreateData {
+  patient_name: string;
+  patient_category?: string;
+  requested_date: string;   // ISO date string e.g. "2026-10-15"
+  requested_time: string;   // e.g. "09:30"
+  ai_assessment?: string;
+  ai_symptoms?: string[];
+  ai_confidence?: number;
+  patient_id?: number;
+}
+
+export interface AppointmentOut {
+  id: number;
+  patient_id?: number | null;
+  patient_name: string;
+  patient_category?: string | null;
+  requested_date: string;
+  requested_time: string;
+  ai_assessment?: string | null;
+  ai_symptoms: string[];
+  ai_confidence: number;
+  status: string;
+  new_date?: string | null;
+  new_time?: string | null;
+  review_status?: string | null;
+  review_notes?: string | null;
+}
+
 // ── Axios instance ────────────────────────────────────────────────────────────
 
 export const apiClient = axios.create({
@@ -206,4 +236,108 @@ export async function translate(data: TranslationData): Promise<TranslationRespo
     ...response.data,
     traduction: response.data.traduction ?? response.data.translation,
   };
+}
+
+// ── Appointments ──────────────────────────────────────────────────────────────
+
+/**
+ * Submit a new appointment request from a patient.
+ * ai_assessment, ai_symptoms and ai_confidence are optional — they can be
+ * filled in by the patient describing their symptoms, and the staff reviews
+ * them later in the AI Diagnostics dashboard.
+ */
+export async function createAppointment(data: AppointmentCreateData): Promise<AppointmentOut> {
+  const response = await apiClient.post<AppointmentOut>('/appointments', {
+    patient_name: data.patient_name,
+    patient_category: data.patient_category ?? null,
+    requested_date: data.requested_date,
+    requested_time: data.requested_time,
+    ai_assessment: data.ai_assessment ?? null,
+    ai_symptoms: data.ai_symptoms ?? [],
+    ai_confidence: data.ai_confidence ?? 0,
+    patient_id: data.patient_id ?? null,
+  });
+  return response.data;
+}
+
+/**
+ * Fetch all appointments visible to the current user.
+ * Staff/doctors see all appointments; patients see only their own.
+ */
+export async function getAppointments(): Promise<AppointmentOut[]> {
+  const response = await apiClient.get<AppointmentOut[]>('/appointments');
+  return response.data;
+}
+
+/**
+ * Fetch only the appointments belonging to the current patient.
+ * Works for any authenticated user — returns [] if no patient record exists.
+ */
+export async function getMyAppointments(): Promise<AppointmentOut[]> {
+  const response = await apiClient.get<AppointmentOut[]>('/appointments/mine');
+  return response.data;
+}
+
+// ── Chat messages (staff ↔ patient) ──────────────────────────────────────────
+
+export interface ChatMessageData {
+  id: number;
+  sender_id: number | null;
+  recipient_id: number | null;
+  sender_name: string | null;
+  recipient_name: string | null;
+  text: string;
+  created_at: string | null;
+}
+
+export interface SendMessageData {
+  recipient_id?: number | null;
+  recipient_name?: string | null;
+  text: string;
+}
+
+/** Fetch all messages for the current user (sent + received). */
+export async function getChatMessages(): Promise<ChatMessageData[]> {
+  const response = await apiClient.get<ChatMessageData[]>('/messages');
+  return response.data;
+}
+
+/** Send a message via REST (used when WebSocket is unavailable). */
+export async function sendChatMessage(data: SendMessageData): Promise<ChatMessageData> {
+  const response = await apiClient.post<ChatMessageData>('/messages', data);
+  return response.data;
+}
+
+// ── Voice transcription ───────────────────────────────────────────────────────
+
+export interface TranscribeResponse {
+  transcription: string;
+  language: string;
+}
+
+/**
+ * Upload a recorded audio file to the backend for speech-to-text transcription.
+ * Uses Gemini's audio understanding — returns the transcribed French text.
+ *
+ * @param uri     - Local file URI from expo-audio (e.g. file:///tmp/recording.m4a)
+ * @param mimeType - MIME type of the recording (default: audio/m4a)
+ */
+export async function transcribeAudio(
+  uri: string,
+  mimeType: string = 'audio/m4a',
+): Promise<TranscribeResponse> {
+  const filename = uri.split('/').pop() ?? 'recording.m4a';
+
+  const formData = new FormData();
+  formData.append('audio', {
+    uri,
+    name: filename,
+    type: mimeType,
+  } as unknown as Blob);
+
+  const response = await apiClient.post<TranscribeResponse>('/transcribe', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60000, // transcription can take a few seconds
+  });
+  return response.data;
 }

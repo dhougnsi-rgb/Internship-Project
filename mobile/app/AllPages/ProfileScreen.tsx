@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { router } from 'expo-router';
 import { getCurrentUser, logout, User } from '@/api/api';
+import { registerPushToken, unregisterPushToken } from '@/utils/pushNotifications';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -19,10 +20,13 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     getCurrentUser().then(setUser).catch(() => undefined);
+    // Register push token when profile screen mounts (user is logged in)
+    registerPushToken();
   }, []);
 
 
   const handleLogout = async (): Promise<void> => {
+    await unregisterPushToken();
     await logout();
     router.replace('/AllPages/LoginScreen');
   };
@@ -92,6 +96,46 @@ export default function ProfileScreen() {
       {/* MENU */}
 
       <View style={styles.menu}>
+
+        {/* MES RENDEZ-VOUS */}
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/AllPages/MyAppointmentsScreen')}
+        >
+          <Ionicons name="list-outline" size={22} color="#0878F9" />
+          <Text style={styles.menuText}>Mes rendez-vous</Text>
+          <Ionicons name="chevron-forward" size={19} color="#999999" />
+        </TouchableOpacity>
+
+        {/* MESSAGES */}
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/AllPages/MessagesScreen')}
+        >
+          <Ionicons name="chatbubble-outline" size={22} color="#0878F9" />
+          <Text style={styles.menuText}>Messages</Text>
+          <Ionicons name="chevron-forward" size={19} color="#999999" />
+        </TouchableOpacity>
+
+        {/* RENDEZ-VOUS */}
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/AllPages/AppointmentScreen')}
+        >
+          <Ionicons name="calendar-outline" size={22} color="#0878F9" />
+          <Text style={styles.menuText}>Prendre rendez-vous</Text>
+          <Ionicons name="chevron-forward" size={19} color="#999999" />
+        </TouchableOpacity>
+
+        {/* DIAGNOSTIC IA */}
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/AllPages/DiagnosticScreen')}
+        >
+          <Ionicons name="medkit-outline" size={22} color="#0878F9" />
+          <Text style={styles.menuText}>Pré-diagnostic IA</Text>
+          <Ionicons name="chevron-forward" size={19} color="#999999" />
+        </TouchableOpacity>
 
         {/* LANGUE */}
 

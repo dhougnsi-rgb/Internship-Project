@@ -85,7 +85,12 @@ export default function AI_Diagnostics() {
     try {
       const updated = mapRaw(await apiCall(`/appointments/${id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ review_status: reviewStatus, review_notes: reviewNotes }),
+        body: JSON.stringify({
+          review_status: reviewStatus,
+          review_notes: reviewNotes,
+          // Pass doctor notes so the auto-created consultation record gets them
+          doctor_notes: reviewNotes || undefined,
+        }),
       }))
       setAppointments((prev) => prev.map((a) => (a.id === id ? updated : a)))
       navigate('/ai-diagnostics')
