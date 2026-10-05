@@ -30,15 +30,11 @@ COPY --from=builder /install /usr/local
 # Copy application source
 COPY . .
 
-# Non-root user for security
-RUN addgroup --system djohealth && adduser --system --ingroup djohealth djohealth
-USER djohealth
-
 EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"
 
-# Fly.io injects $PORT (8080) — fall back to 8000 for local/Docker use
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 2
+# Fly.io/Back4App inject $PORT — fall back to 8080
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1
