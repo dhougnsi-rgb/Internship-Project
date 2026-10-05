@@ -34,11 +34,11 @@ COPY . .
 RUN addgroup --system djohealth && adduser --system --ingroup djohealth djohealth
 USER djohealth
 
-EXPOSE 8000
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"
 
-# Railway injects $PORT — fall back to 8000 for local/Docker use
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2
+# Fly.io injects $PORT (8080) — fall back to 8000 for local/Docker use
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 2
